@@ -8,7 +8,7 @@ class RenderDateset(Dataset):
             self.datas = json.load(f)
         self.transform = transform
     def __getitem__(self, index):
-        para = torch.Tensor(self.datas[index]["dir"] + self.datas[index]["point"])
+        para = torch.Tensor(self.datas[index]["point"] + self.datas[index]["dir"])
         label = torch.Tensor(self.datas[index]["rgb"])
         if self.transform is not None:
             para = self.transform(para)
