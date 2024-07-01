@@ -1,13 +1,13 @@
 import torch
 from simpleNet import NeuralNetwork
-from RenderDataset import RenderDateset
+from RenderDataset import RenderDateset,RenderDatasetSph
 from torch.utils.data import DataLoader
 import torch.nn as nn
 def train():
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = NeuralNetwork(6,3).to(device)
-    dataset = RenderDateset(data_dir="c.json")
+    model = NeuralNetwork(4,3).to(device)
+    dataset = RenderDatasetSph(data_dir="datas/sph_1.json")
     dataset_loader = DataLoader(dataset,batch_size=100,shuffle=True)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001,weight_decay=0.0004)
@@ -32,10 +32,8 @@ def train():
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                     .format(epoch+1, 100, i+1, total_step, loss.item()))
     model.eval()
-    example_input = torch.rand(2,6).to(device)
-    input = torch.tensor([209.240677, 51.0370140, -13.8729544, -0.742403865, -0.519836783, -0.422618270],dtype=torch.float32).to(device)
-    print(model(input))
+    example_input = torch.rand(2,4).to(device)
     traced_script_module = torch.jit.trace(model, example_input)
-    traced_script_module.save("model2.pt")
+    traced_script_module.save("models/model_sph1.pt")
 if __name__ == "__main__":
     train()
