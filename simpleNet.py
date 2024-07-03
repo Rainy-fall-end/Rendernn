@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 class NeuralNetwork(nn.Module):
     def __init__(self,in_size,out_size):
         super().__init__()
@@ -19,7 +20,9 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.Dropout(),
             nn.Linear(in_size*2, out_size),
+            nn.ReLU()
         )
     def forward(self, x):
         x = self.linear_relu_stack(x)
+        x = torch.clamp(x,0,255)
         return x
