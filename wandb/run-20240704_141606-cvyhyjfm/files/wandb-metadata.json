@@ -1,0 +1,53 @@
+{
+    "os": "Windows-10-10.0.22631-SP0",
+    "python": "3.11.7",
+    "heartbeatAt": "2024-07-04T06:16:10.229517",
+    "startedAt": "2024-07-04T06:16:06.872647",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\works\\soc\\rainy\\Rendernn\\train.py",
+    "codePathLocal": "train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/Rainy-fall-end/Rendernn.git",
+        "commit": "1d821472013246a5822eb34227f4d6b7fee8c3cf"
+    },
+    "email": "Rainy",
+    "root": "C:/works/soc/rainy/Rendernn",
+    "host": "Rainy",
+    "username": "31337",
+    "executable": "c:\\apps\\code\\anaconda3\\python.exe",
+    "cpu_count": 16,
+    "cpu_count_logical": 32,
+    "cpu_freq": {
+        "current": 2401.0,
+        "min": 0.0,
+        "max": 2401.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1984.0,
+            "min": 0.0,
+            "max": 2401.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 926.3186683654785,
+            "used": 293.38386154174805
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+            "memory_total": 8585740288
+        }
+    ],
+    "memory": {
+        "total": 15.21820068359375
+    }
+}
