@@ -1,13 +1,13 @@
 import torch
 from networks.simpleNet import NeuralNetwork
 from networks.resnet import res_net
-from networks.gridnet import GridNet
+from networks.gridnet1 import GridNet
 from RenderDataset import RenderDataset,RenderDatasetSph,RenderDatasetB
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import wandb
 import torch.nn.init as init
-need_wandb = False
+need_wandb = True
 def init_model(m):
     if isinstance(m, nn.Linear):
         init.uniform_(m.weight, a=-1e-9, b=1e-9)
@@ -17,7 +17,7 @@ def train(model_type,model_path,dataset_path,echo):
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if model_type == "grid":
-        model = GridNet(3,device=device).to(device)    
+        model = GridNet([2048,2048],3,device).to(device)    
     elif model_type == "res":
         model = res_net(2,3).to(device)
     else:
@@ -27,7 +27,8 @@ def train(model_type,model_path,dataset_path,echo):
     dataset_loader = DataLoader(dataset,batch_size=10000,shuffle=True)
     criterion = nn.MSELoss()
     # criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.1,weight_decay=0.04)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.SGD(model.parameters(),lr=0.01,momentum=0.004)
     # Train the model
     total_step = len(dataset_loader)
     for epoch in range(echo):
@@ -39,7 +40,7 @@ def train(model_type,model_path,dataset_path,echo):
             # Forward pass
             if(model_type=="grid"):
                 p1,p2 = torch.split(para,2,dim=1)
-                outputs = model(p1,p2)
+                outputs = model(p1)
             else:
                 p1,p2 = torch.split(para,2,dim=1)
                 outputs = model(p1)
@@ -50,8 +51,11 @@ def train(model_type,model_path,dataset_path,echo):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            
-            if (i+1) % 100 == 0:
+            # for param in model.parameters():
+            #     if param.grad is not None:
+            #         print(param.grad.data.abs().mean())
+
+            if (i+1) % 50 == 0:
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                     .format(epoch+1, echo, i+1, total_step, loss.item()))
     if need_wandb:
@@ -60,7 +64,7 @@ def train(model_type,model_path,dataset_path,echo):
     if(model_type=="grid"):
         example_input_1 = torch.rand(2,2).to(device)
         example_input_2 = torch.rand(2,2).to(device)
-        traced_script_module = torch.jit.trace(model, (example_input_1,example_input_2))
+        traced_script_module = torch.jit.trace(model, example_input_1)
     else:
         input1 = torch.tensor([1.85491669, 0.721287251],device=device)
         print(model(input1))
@@ -85,7 +89,7 @@ if __name__ == "__main__":
         "epochs": 100,
         "model":"res",
         "feature_num":0,
-        "train_type":"res"
+        "train_type":"grid"
         }
     )
-    train(model_type="res",model_path="models/model_sph5.pt",dataset_path="datas/sph_6.json",echo=10)
+    train(model_type="grid",model_path="models/model_sph_grid7.pt",dataset_path="datas/sph_6.json",echo=100)
