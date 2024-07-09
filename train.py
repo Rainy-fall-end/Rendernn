@@ -7,7 +7,8 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import wandb
 import torch.nn.init as init
-need_wandb = True
+
+need_wandb = False
 def init_model(m):
     if isinstance(m, nn.Linear):
         init.uniform_(m.weight, a=-1e-9, b=1e-9)
@@ -17,7 +18,7 @@ def train(model_type,model_path,dataset_path,echo):
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if model_type == "grid":
-        model = GridNet([2048,2048],3,device).to(device)    
+        model = GridNet([512,512],3,device).to(device)    
     elif model_type == "res":
         model = res_net(2,3).to(device)
     else:
@@ -27,8 +28,8 @@ def train(model_type,model_path,dataset_path,echo):
     dataset_loader = DataLoader(dataset,batch_size=10000,shuffle=True)
     criterion = nn.MSELoss()
     # criterion = nn.MSELoss()
-    # optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    optimizer = torch.optim.SGD(model.parameters(),lr=0.01,momentum=0.004)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+    # optimizer = torch.optim.SGD(model.parameters(),lr=0.01,momentum=0.004)
     # Train the model
     total_step = len(dataset_loader)
     for epoch in range(echo):
@@ -85,11 +86,12 @@ if __name__ == "__main__":
 
         # track hyperparameters and run metadata
         config={
-        "learning_rate": 0.01,
+        "learning_rate": 0.1,
         "epochs": 100,
         "model":"res",
         "feature_num":0,
         "train_type":"grid"
         }
     )
+    # save path
     train(model_type="grid",model_path="models/model_sph_grid7.pt",dataset_path="datas/sph_6.json",echo=100)
