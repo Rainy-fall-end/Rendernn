@@ -18,7 +18,7 @@ def train(model_type,model_path,dataset_path,echo):
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if model_type == "grid":
-        model = GridNetDir([128,128,64,64],3,device).to(device)    
+        model = GridNetDir([50,50,25,25],6,device).to(device)    
     elif model_type == "res":
         model = res_net(4,3).to(device)
     else:
@@ -83,4 +83,4 @@ if __name__ == "__main__":
         "train_type":"grid-dir"
         }
     )
-    train(model_type="grid",model_path="models/dir_model_sph_grid2.pt",dataset_path="datas/all_dir_sph_range_2.json",echo=1)
+    train(model_type="grid",model_path="models/dir_model_sph_grid4.pt",dataset_path="datas/all_dir_sph_range_2.json",echo=1)

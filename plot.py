@@ -10,9 +10,16 @@ def plot2():
     Z1 = []
     Z2 = []
     Z3 = []
-    with open("datas/sph_6.json") as f:
+    p1_ls = []
+    p2_ls = []
+    # with open("datas/sph_6.json") as f:
+    with open("datas/M/sph1.json") as f:
         datas = json.load(f)
         for data in datas:
+            # if(float(data["rgb"][0]-0)**2+float(data["rgb"][1]-0)**2+float(data["rgb"][2]-1)**2<1e-3):
+            #     continue
+            if data["hit"] == 0:
+                continue
             p1 = float(data["point_sph"][0])
             p2 = float(data["point_sph"][1])
             X.append(100*math.sin(p1)*math.cos(p2))
@@ -21,9 +28,15 @@ def plot2():
             Z1.append(float(data["rgb"][0]))
             Z2.append(float(data["rgb"][1]))
             Z3.append(float(data["rgb"][2]))
+            p1_ls.append(p1)
+            p2_ls.append(p2)
     # for i in range(1000):
     #     print(X[i]**2+Y[i]**2+Z[i]**2)
-    size = 10000
+    size = 1000
+    print(np.min(p1_ls))
+    print(np.max(p1_ls))
+    print(np.min(p2_ls))
+    print(np.max(p2_ls))
     print(np.max(X))
     print(np.min(X))
     print(np.max(Y))

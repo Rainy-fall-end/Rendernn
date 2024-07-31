@@ -18,9 +18,12 @@ class GridNetDir(nn.Module):
         )
         init.xavier_uniform_(self.grid)
         self.outlayers = nn.Sequential(
-                    nn.Linear(self.feature_num,self.feature_num*4),
-                    nn.LeakyReLU(),
-                    nn.Linear(self.feature_num*4,3)
+                    nn.Linear(self.feature_num,512),
+                    nn.ReLU(),
+                    nn.Linear(512,1024),
+                    nn.ReLU(),
+                    nn.Linear(1024,512),
+                    nn.Linear(512,3)
                 )
     def bilinear_interpolate(self, vec):
         if vec.dim() == 1:

@@ -53,6 +53,25 @@ class RenderDatasetB(Dataset):
         return para,label
     def __len__(self)->int:
         return len(self.datas)
+class RenderDatasetM(Dataset):
+    def __init__(self,data_dir="datas/sph_1.json",transform=None) -> None:
+        super().__init__()
+        with open(data_dir) as f:
+            self.datas = json.load(f)
+        self.transform = transform
+    def __getitem__(self, index):
+        para = torch.Tensor(self.datas[index]["point_sph"]+self.datas[index]["dir_sph"])
+        label = torch.Tensor(self.datas[index]["rgb"])
+        hit_value = self.datas[index]["hit"]
+        hit = torch.tensor(hit_value, dtype=torch.float)
+        # dis = torch.Tensor(self.datas[index]["dis"])
+        if self.transform is not None:
+            para = self.transform(para)
+            label = self.transform(label)
+            hit = self.transform(hit)
+        return para,label,hit
+    def __len__(self)->int:
+        return len(self.datas)
 ## test
 
 if __name__ == "__main__":

@@ -57,22 +57,3 @@ class res_net(nn.Module):
         x = self.res_net(x)
         x = self.out_layers(x)
         return x
-        
-# a = torch.randn(2,4)
-# net = res_net(4,3)
-# a_ = net(a)
-# print(a_)
-# x = torch.rand(2,4,10)
-# size = 10
-# net = nn.Sequential(
-#             nn.Linear(size,size),我
-#             nn.BatchNorm1d(4),
-#             nn.Dropout(0.3),
-#             nn.ReLU(),
-#             nn.Linear(size,size),
-#             nn.BatchNorm1d(4),
-#             nn.Dropout(0.3),
-#             nn.ReLU()
-#         )
-# y = net(x)
-# print(y)

@@ -49,6 +49,7 @@ class GridNet(nn.Module):
     def forward(self, pos):
         x = self.bilinear_interpolate(pos)
         x = torch.sigmoid(x)
+        x = F.threshold(x,0.1,0)
         x = x*255
         return x
 
@@ -89,8 +90,8 @@ class GridNetDir(nn.Module):
         x_fract = vec[:, 0] % 1
         y_fract = vec[:, 1] % 1
 
-        bottom_right_x = torch.clamp(top_left_x + 1, max=W)
-        bottom_right_y = torch.clamp(top_left_y + 1, max=H)
+        bottom_right_x = torch.where(top_left_x + 1 > W, torch.tensor(0, device=self.device), top_left_x + 1)
+        bottom_right_y = torch.where(top_left_y + 1 > H, torch.tensor(0, device=self.device), top_left_y + 1)
 
         tl_vectors = grid[top_left_y, top_left_x]    # Top-left corner vectors
         tr_vectors = grid[top_left_y, bottom_right_x]  # Top-right corner vectors
