@@ -13,15 +13,17 @@ def plot2():
     p1_ls = []
     p2_ls = []
     # with open("datas/sph_6.json") as f:
-    with open("datas/M/sph1.json") as f:
+    with open("datas/all_dir_sph_range_4.json") as f:
         datas = json.load(f)
         for data in datas:
-            # if(float(data["rgb"][0]-0)**2+float(data["rgb"][1]-0)**2+float(data["rgb"][2]-1)**2<1e-3):
-            #     continue
-            if data["hit"] == 0:
+            if(float(data["rgb"][0]-0)**2+float(data["rgb"][1]-0)**2+float(data["rgb"][2]-1)**2<1e-3):
                 continue
-            p1 = float(data["point_sph"][0])
-            p2 = float(data["point_sph"][1])
+            # if data["hit"] == 0:
+            # #     continue
+            # p1 = float(data["point_sph"][0])
+            # p2 = float(data["point_sph"][1])
+            p1 = float(data["dir_sph"][0])
+            p2 = float(data["dir_sph"][1])
             X.append(100*math.sin(p1)*math.cos(p2))
             Y.append(100*math.sin(p1)*math.sin(p2))
             Z.append(100*math.cos(p1))

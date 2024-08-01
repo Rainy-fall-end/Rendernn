@@ -1,7 +1,7 @@
 import torch
 from networks.simpleNet import NeuralNetwork
 from networks.resnet import res_net
-from networks.gridnet1 import GridNet
+from networks.gridnet3 import GridNet
 from RenderDataset import RenderDataset,RenderDatasetSph,RenderDatasetB
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -20,14 +20,14 @@ def train(model_type,model_path,dataset_path,echo):
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if model_type == "grid":
-        model = GridNet([256,256],3,device).to(device)    
+        model = GridNet([512,512],5,3,device).to(device)    
     elif model_type == "res":
         model = res_net(2,3).to(device)
     else:
         model = NeuralNetwork(2,3).to(device)
     model.apply(init_model)
     dataset = RenderDatasetSph(data_dir=dataset_path)
-    dataset_loader = DataLoader(dataset,batch_size=100000,shuffle=True)
+    dataset_loader = DataLoader(dataset,batch_size=10000,shuffle=True)
     criterion = nn.MSELoss()
     # criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
@@ -66,8 +66,8 @@ def train(model_type,model_path,dataset_path,echo):
                     .format(epoch+1, echo, i+1, total_step, loss.item()))
     if need_wandb:
         wandb.finish()
-    numpy_array = model.grid.cpu().detach().numpy()
-    numpy.savetxt("b.txt",numpy_array[:,:,0],fmt='%.2f')
+    # numpy_array = model.grid.cpu().detach().numpy()
+    # numpy.savetxt("b.txt",numpy_array[:,:,0],fmt='%.2f')
     model.eval()
     if(model_type=="grid"):
         example_input_1 = torch.rand(2,2).to(device)
@@ -97,9 +97,10 @@ if __name__ == "__main__":
         "epochs": 100,
         "model":"res",
         "feature_num":0,
-        "train_type":"sh"
+        "train_type":"sh",
+        "name" : "grid5X5"
         }
     )
     # save path
     # train(model_type="grid",model_path="models/model_sph_grid7.pt",dataset_path="datas/sph_6.json",echo=100)
-    train(model_type="grid",model_path="models/sh1.pt",dataset_path="datas/sph_6.json",echo=10)
+    train(model_type="grid",model_path="models/sh3.pt",dataset_path="datas/sph_6.json",echo=5)
