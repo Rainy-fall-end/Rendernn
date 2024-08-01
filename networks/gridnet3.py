@@ -48,10 +48,6 @@ class GridNet(nn.Module):
             ),
             requires_grad=True,
         )
-        # self.grid_dir = nn.Parameter(
-        #     torch.empty(grid_size[1],grid_size[1], 3, 3, device=device, requires_grad=True),
-        #     requires_grad=True
-        # )
         init.xavier_uniform_(self.grid_pos)
         
     def get_neighbor(self, vec):
@@ -61,106 +57,27 @@ class GridNet(nn.Module):
         offset = (self.neighbor_size-1)//2
         top_left_x = vec[:, 0].long().to(self.device) + offset
         top_left_y = vec[:, 1].long().to(self.device) + offset
-        # if self.neighbor_size == 3:
-        #     vector_res = torch.stack(
-        #         (
-        #             torch.stack(
-        #                 (
-        #                     self.grid_pos[top_left_x - 1, top_left_y + 1],
-        #                     self.grid_pos[top_left_x, top_left_y + 1],
-        #                     self.grid_pos[top_left_x + 1, top_left_y + 1],
-        #                 ),
-        #                 dim=2,
-        #             ),
-        #             torch.stack(
-        #                 (
-        #                     self.grid_pos[top_left_x - 1, top_left_y],
-        #                     self.grid_pos[top_left_x, top_left_y],
-        #                     self.grid_pos[top_left_x + 1, top_left_y],
-        #                 ),
-        #                 dim=2,
-        #             ),
-        #             torch.stack(
-        #                 (
-        #                     self.grid_pos[top_left_x - 1, top_left_y + 1],
-        #                     self.grid_pos[top_left_x, top_left_y + 1],
-        #                     self.grid_pos[top_left_x + 1, top_left_y + 1],
-        #                 ),
-        #                 dim=2,
-        #             ),
-        #         ),
-        #         dim=2,
-        #     )
         size = self.neighbor_size
         half_size = size // 2
         
-        # 创建一个空列表来存储每个邻域的值
         neighborhood_list = []
 
-        # 遍历每一行和每一列
         for i in range(-half_size, half_size + 1):
             row_list = []
             for j in range(-half_size, half_size + 1):
                 row_list.append(self.grid_pos[top_left_x + i, top_left_y + j])
-            # 堆叠当前行
             neighborhood_list.append(torch.stack(row_list, dim=2))
         
-        # 堆叠所有行
         vector_res = torch.stack(neighborhood_list, dim=2)
         return vector_res
-
-    def bilinear_interpolate(self, vec):
-        vec = vec.clone()  # Avoid modifying the input directly
-        vec[:, 0] = vec[:, 0] / math.pi * (self.grid_size[0] - 1)
-        vec[:, 1] = (vec[:, 1] + math.pi) / (2 * math.pi) * (self.grid_size[1] - 1)
-
-        W, H = self.grid_size[1] - 1, self.grid_size[0] - 1
-        top_left_x = vec[:, 0].long().to(self.device)
-        top_left_y = vec[:, 1].long().to(self.device)
-
-        x_fract = vec[:, 0] % 1
-        y_fract = vec[:, 1] % 1
-
-        bottom_right_x = torch.where(
-            top_left_x + 1 > W, torch.tensor(0, device=self.device), top_left_x + 1
-        )
-        bottom_right_y = torch.where(
-            top_left_y + 1 > H, torch.tensor(0, device=self.device), top_left_y + 1
-        )
-
-        tl_vectors = self.grid_pos[top_left_y, top_left_x]  # Top-left corner vectors
-        tr_vectors = self.grid_pos[
-            top_left_y, bottom_right_x
-        ]  # Top-right corner vectors
-        bl_vectors = self.grid_pos[
-            bottom_right_y, top_left_x
-        ]  # Bottom-left corner vectors
-        br_vectors = self.grid_pos[
-            bottom_right_y, bottom_right_x
-        ]  # Bottom-right corner vectors
-        top_interp = (1 - x_fract).unsqueeze(1) * tl_vectors + x_fract.unsqueeze(
-            1
-        ) * tr_vectors
-        bottom_interp = (1 - x_fract).unsqueeze(1) * bl_vectors + x_fract.unsqueeze(
-            1
-        ) * br_vectors
-        interpolated_vectors = (1 - y_fract).unsqueeze(
-            1
-        ) * top_interp + y_fract.unsqueeze(1) * bottom_interp
-
-        return interpolated_vectors
 
     def forward(self, pos):
         if pos.dim() == 1:
             pos = pos.unsqueeze(0)
-        # if dir.dim() == 1:
-        #    dir = dir.unqueeeze(1)
-        # x = torch.cat((pos, dir), dim=1)
         pos_weight = self.dirCNN(pos)
         pos_neighbor = self.get_neighbor(pos)
         x = pos_weight*pos_neighbor
         x = x.sum(dim=[2, 3]) 
-        # x = self.bilinear_interpolate(pos)
         x = torch.sigmoid(x)
         x = F.threshold(x, 0.1, 0)
         x = x * 255
