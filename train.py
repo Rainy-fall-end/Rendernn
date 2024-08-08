@@ -2,12 +2,14 @@ import torch
 from networks.simpleNet import NeuralNetwork
 from networks.resnet import res_net
 from networks.gridnet3 import GridNet
+from networks.hashnet import HashNet
 from RenderDataset import RenderDataset,RenderDatasetSph,RenderDatasetB
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import wandb
 import torch.nn.init as init
 import numpy
+
 need_wandb = True
 
 
@@ -23,6 +25,8 @@ def train(model_type,model_path,dataset_path,echo):
         model = GridNet([512,512],5,3,device).to(device)    
     elif model_type == "res":
         model = res_net(2,3).to(device)
+    elif model_type == "hash":
+        model = HashNet(bounding_box=torch.tensor([[0,0,0],[1,1,1]]).to(device=device))
     else:
         model = NeuralNetwork(2,3).to(device)
     model.apply(init_model)

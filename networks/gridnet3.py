@@ -24,7 +24,6 @@ class DirCNN(nn.Module):
         self.neighbor_size = neighbor_size
     def forward(self, x):
         x = self.fc(x)
-        # x = x.view(-1, 3, 3, 3)  # 假设 fc 的输出大小为 (batch_size, 256)
         x = F.softmax(x.view(x.shape[0], -1), dim=1).view(-1 ,3, self.neighbor_size, self.neighbor_size)
         return x
 
