@@ -3,11 +3,14 @@ import numpy as np
 import pdb
 import torch
 
-from ray_utils import get_rays, get_ray_directions, get_ndc_rays
+from networks.ray_utils import get_rays, get_ray_directions, get_ndc_rays
 
 
-BOX_OFFSETS = torch.tensor([[[i,j,k] for i in [0, 1] for j in [0, 1] for k in [0, 1]]],
-                               device='cuda')
+BOX_OFFSETS = torch.tensor(
+    [[[i, j, k, l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]],
+    device='cuda'
+)
+
 
 
 def hash(coords, log2_hashmap_size):
@@ -92,24 +95,24 @@ def get_bbox3d_for_llff(poses, hwf, near=0.0, far=1.0):
     return (torch.tensor(min_bound)-torch.tensor([0.1,0.1,0.0001]), torch.tensor(max_bound)+torch.tensor([0.1,0.1,0.0001]))
 
 
-def get_voxel_vertices(xyz, bounding_box, resolution, log2_hashmap_size):
+def get_voxel_vertices(pd, bounding_box, resolution, log2_hashmap_size):
     '''
-    xyz: 3D coordinates of samples. B x 3
-    bounding_box: min and max x,y,z coordinates of object bbox
+    pd: 3D positions and directions of samples. B x 4
+    bounding_box: min and max pd coordinates of object bbox
     resolution: number of voxels per axis
     '''
     box_min, box_max = bounding_box
 
-    keep_mask = xyz==torch.max(torch.min(xyz, box_max), box_min)
-    if not torch.all(xyz <= box_max) or not torch.all(xyz >= box_min):
+    keep_mask = pd==torch.max(torch.min(pd, box_max), box_min)
+    if not torch.all(pd <= box_max) or not torch.all(pd >= box_min):
         # print("ALERT: some points are outside bounding box. Clipping them!")
-        xyz = torch.clamp(xyz, min=box_min, max=box_max)
+        pd = torch.clamp(pd, min=box_min, max=box_max)
 
     grid_size = (box_max-box_min)/resolution
     
-    bottom_left_idx = torch.floor((xyz-box_min)/grid_size).int()
+    bottom_left_idx = torch.floor((pd-box_min)/grid_size).int()
     voxel_min_vertex = bottom_left_idx*grid_size + box_min
-    voxel_max_vertex = voxel_min_vertex + torch.tensor([1.0,1.0,1.0],device='cuda')*grid_size
+    voxel_max_vertex = voxel_min_vertex + torch.tensor([1.0,1.0,1.0,1.0],device='cuda')*grid_size
 
     tmp = bottom_left_idx.unsqueeze(1)
     
@@ -121,7 +124,7 @@ def get_voxel_vertices(xyz, bounding_box, resolution, log2_hashmap_size):
 
 
 if __name__=="__main__":
-    with open("data/nerf_synthetic/chair/transforms_train.json", "r") as f:
-        camera_transforms = json.load(f)
-    
-    bounding_box = get_bbox3d_for_blenderobj(camera_transforms, 800, 800)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    test = random_tensor = torch.rand(2,8, 3).to(device=device)
+    res = hash(test,19)
+    print(res.shape)

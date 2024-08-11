@@ -2,6 +2,7 @@ import torch
 from networks.simpleNet import NeuralNetwork
 from networks.resnet import res_net
 from networks.gridnet4dir import GridNet
+from networks.hashnet import HashNet
 from RenderDataset import RenderDataset,RenderDatasetSph,RenderDatasetB
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -22,6 +23,8 @@ def train(model_type,model_path,dataset_path,echo):
         model = GridNet([2048,2048],7,12,device).to(device)
     elif model_type == "res":
         model = res_net(4,3).to(device)
+    elif model_type == "hash":
+        model = HashNet().to(device)
     else:
         model = NeuralNetwork(4,3).to(device)
     model.apply(init_model)
@@ -85,7 +88,7 @@ if __name__ == "__main__":
         "feature_num":0,
         "train_type":"grid-dir",
         "neighbor_size":7,
-        "name":"gridDir"
+        "name":"HashNet"
         }
     )
-    train(model_type="grid",model_path="models/dir_model_sph_grid5.pt",dataset_path="datas/all_dir_sph_range_5.json",echo=5)
+    train(model_type="grid",model_path="models/dir_model_sph_hash1.pt",dataset_path="datas/all_dir_sph_range_5.json",echo=5)
