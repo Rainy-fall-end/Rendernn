@@ -6,14 +6,7 @@ import torch
 from networks.ray_utils import get_rays, get_ray_directions, get_ndc_rays
 
 
-BOX_OFFSETS = torch.tensor(
-    [[[i, j, k, l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]],
-    device='cuda'
-)
-
-
-
-def hash(coords, log2_hashmap_size):
+def shash(coords, log2_hashmap_size):
     '''
     coords: this function can process upto 7 dim coordinates
     log2T:  logarithm of T w.r.t 2
@@ -95,17 +88,16 @@ def get_bbox3d_for_llff(poses, hwf, near=0.0, far=1.0):
     return (torch.tensor(min_bound)-torch.tensor([0.1,0.1,0.0001]), torch.tensor(max_bound)+torch.tensor([0.1,0.1,0.0001]))
 
 
-def get_voxel_vertices(pd, bounding_box, resolution, log2_hashmap_size):
+def get_voxel_vertices(pd, box_min,box_max,box_offset, resolution, log2_hashmap_size):
     '''
     pd: 3D positions and directions of samples. B x 4
     bounding_box: min and max pd coordinates of object bbox
     resolution: number of voxels per axis
     '''
-    box_min, box_max = bounding_box
 
     keep_mask = pd==torch.max(torch.min(pd, box_max), box_min)
     if not torch.all(pd <= box_max) or not torch.all(pd >= box_min):
-        # print("ALERT: some points are outside bounding box. Clipping them!")
+        print("ALERT: some points are outside bounding box. Clipping them!")
         pd = torch.clamp(pd, min=box_min, max=box_max)
 
     grid_size = (box_max-box_min)/resolution
@@ -113,11 +105,14 @@ def get_voxel_vertices(pd, bounding_box, resolution, log2_hashmap_size):
     bottom_left_idx = torch.floor((pd-box_min)/grid_size).int()
     voxel_min_vertex = bottom_left_idx*grid_size + box_min
     voxel_max_vertex = voxel_min_vertex + torch.tensor([1.0,1.0,1.0,1.0],device='cuda')*grid_size
-
-    tmp = bottom_left_idx.unsqueeze(1)
     
-    voxel_indices = bottom_left_idx.unsqueeze(1) + BOX_OFFSETS
-    hashed_voxel_indices = hash(voxel_indices, log2_hashmap_size)
+    # BOX_OFFSETS = torch.tensor(
+    #     [[[i, j, k, l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]],
+    #     device='cuda'
+    # )
+    voxel_indices = bottom_left_idx.unsqueeze(1) + box_offset
+    
+    hashed_voxel_indices = shash(voxel_indices, log2_hashmap_size)
 
     return voxel_min_vertex, voxel_max_vertex, hashed_voxel_indices, keep_mask
 
@@ -126,5 +121,5 @@ def get_voxel_vertices(pd, bounding_box, resolution, log2_hashmap_size):
 if __name__=="__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     test = random_tensor = torch.rand(2,8, 3).to(device=device)
-    res = hash(test,19)
+    res = shash(test,19)
     print(res.shape)

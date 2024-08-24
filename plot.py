@@ -12,8 +12,8 @@ def plot2():
     Z3 = []
     p1_ls = []
     p2_ls = []
-    with open("datas/sph_6.json") as f:
-    #with open("datas/all_dir_sph_range_4.json") as f:
+    # with open("datas/sph_6.json") as f:
+    with open("datas/all_dir_sph_range_5.json") as f:
         datas = json.load(f)
         for data in datas:
             if(float(data["rgb"][0]-0)**2+float(data["rgb"][1]-0)**2+float(data["rgb"][2]-1)**2<1e-3):

@@ -56,6 +56,8 @@ class res_net(nn.Module):
         x = self.bn4(x)
         x = self.res_net(x)
         x = self.out_layers(x)
+        x = torch.sigmoid(x)
+        x = x*255.0
         return x
         
 # a = torch.randn(2,4)

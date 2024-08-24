@@ -1,8 +1,8 @@
 import torch
 from networks.simpleNet import NeuralNetwork
 from networks.resnet import res_net
-from networks.gridnet3 import GridNet
 from networks.hashnet import HashNet
+from networks.gridnet_matrix import GridNet
 from RenderDataset import RenderDataset,RenderDatasetSph,RenderDatasetB
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -22,16 +22,17 @@ def train(model_type,model_path,dataset_path,echo):
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if model_type == "grid":
-        model = GridNet([512,512],5,3,device).to(device)    
+        # model = GridNet([2048,2048],5,3,device).to(device)
+        model = GridNet([2048,2048],3,device=device).to(device)    
     elif model_type == "res":
         model = res_net(2,3).to(device)
     elif model_type == "hash":
-        model = HashNet(bounding_box=torch.tensor([[0,0,0],[1,1,1]]).to(device=device))
+        model = HashNet().to(device=device)
     else:
         model = NeuralNetwork(2,3).to(device)
     model.apply(init_model)
     dataset = RenderDatasetSph(data_dir=dataset_path)
-    dataset_loader = DataLoader(dataset,batch_size=10000,shuffle=True)
+    dataset_loader = DataLoader(dataset,batch_size=4096,shuffle=True)
     criterion = nn.MSELoss()
     # criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
@@ -55,8 +56,6 @@ def train(model_type,model_path,dataset_path,echo):
                 outputs = model(p1)
                 
             loss = criterion(outputs, labels)
-            if need_wandb:
-                wandb.log({"loss":loss})
             # Backward and optimize
             optimizer.zero_grad()
             loss.backward()
@@ -64,7 +63,8 @@ def train(model_type,model_path,dataset_path,echo):
             # for param in model.parameters():
             #     if param.grad is not None:
             #         print(param.grad.data.abs().mean())
-
+            if need_wandb:
+                wandb.log({"loss":loss.item()})
             if (i+1) % 50 == 0:
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                     .format(epoch+1, echo, i+1, total_step, loss.item()))
@@ -106,5 +106,5 @@ if __name__ == "__main__":
         }
     )
     # save path
-    # train(model_type="grid",model_path="models/model_sph_grid7.pt",dataset_path="datas/sph_6.json",echo=100)
-    train(model_type="grid",model_path="models/sh3.pt",dataset_path="datas/sph_6.json",echo=5)
+    train(model_type="grid",model_path="models/compare/model_sph_hash.pt",dataset_path="datas/sph_7.json",echo=1)
+    # train(model_type="grid",model_path="models/sh3.pt",dataset_path="datas/sph_6.json",echo=5)

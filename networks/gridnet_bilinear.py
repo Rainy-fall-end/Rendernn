@@ -47,32 +47,21 @@ class GridNet(nn.Module):
             nn.Linear(4,3)
         )
         self.fc_layer = nn.Sequential(
-            nn.Linear(self.feature_num*2,64),
-            nn.Dropout(0.3),
-            nn.LeakyReLU(),
-            nn.Linear(64,16),
-            nn.Dropout(0.3),
-            nn.LeakyReLU(),
-            nn.Linear(16,8),
-            nn.Dropout(0.3),
-            nn.LeakyReLU(),
-            nn.Linear(8,3),
-            nn.Dropout(0.3),
-            nn.LeakyReLU()
+            nn.Linear(self.feature_num,3)
         )
     def encoder(self,x):
         x = self.encoder_layer(x)
         x = torch.sigmoid(x)
         return x
-    def forward(self, pos, dir):
-        pos = self.encoder(pos)
-        dir = self.encoder(dir)
-        pos_features = bilinear_interpolate(self.device, self.pos_grid, pos).detach()  # Get features from position grid
-        dir_features = bilinear_interpolate(self.device,self.dir_grid, dir).detach()  # Get features from direction grid
-        
-        x = torch.cat((pos_features, dir_features), dim=1)
+    def forward(self, pos):
+        # pos = self.encoder(pos)
+        # dir = self.encoder(dir)
+        x = bilinear_interpolate(self.device, self.pos_grid, pos).detach()  # Get features from position grid
+        # dir_features = bilinear_interpolate(self.device,self.dir_grid, dir).detach()  # Get features from direction grid
+        # x = pos_features
+        # x = torch.cat((pos_features, dir_features), dim=1)
         # Concatenate the features from both grids with the original input features
-        x = self.fc_layer(x)
+        # x = self.fc_layer(x)
         x = torch.sigmoid(x)
         x = x*255
         return x
